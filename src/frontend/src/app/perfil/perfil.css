@@ -1,0 +1,127 @@
+.fondo-perfil {
+  background-color: #ECF2E9;
+  min-height: 100vh;
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.card-perfil {
+  border-radius: 16px;
+  border: none;
+  background: white;
+  overflow: hidden;
+}
+
+.sombra {
+  box-shadow: 0 10px 30px rgba(167, 217, 217, 0.4),
+              0 4px 15px rgba(167, 217, 217, 0.3);
+}
+
+.campo {
+  background-color: #A7D9D9;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.campo:focus {
+  background-color: #95c7c7;
+  border: none;
+  box-shadow: 0 0 0 0.2rem rgba(167, 217, 217, 0.5);
+}
+
+.campo[readonly] {
+  background-color: #e9ecef;
+  opacity: 0.8;
+}
+
+.btn {
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  padding: 10px 20px;
+}
+
+.btn-primary {
+  background-color: #1E3859;
+  color: white;
+  box-shadow: 0 4px 6px rgba(30, 56, 89, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: #162a42;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(30, 56, 89, 0.4);
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(40, 167, 69, 0.4);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  box-shadow: 0 4px 6px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(108, 117, 125, 0.4);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.form-label {
+  color: #1E3859;
+  margin-bottom: 8px;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+@media (max-width: 575.98px) {
+  .fondo-perfil {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .card-perfil {
+    border-radius: 12px;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .fondo-perfil {
+    padding-top: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .fondo-perfil {
+    padding-top: 20px;
+  }
+}
+

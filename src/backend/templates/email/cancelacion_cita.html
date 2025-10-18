@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p>Estimado/a <strong>{{ nombre }}</strong>,</p>
+
+<p>Lamentamos informarle que su cita médica ha sido <strong style="color: #dc3545;">CANCELADA</strong>.</p>
+
+<div class="info-box" style="border-left: 4px solid {{ color_tema }};">
+    <h3 style="color: {{ color_tema }};">DETALLES DE LA CITA CANCELADA:</h3>
+    <div class="info-item">
+        <span class="info-label">Fecha:</span>
+        <span class="info-value">{{ fecha_formateada }}</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Hora:</span>
+        <span class="info-value">{{ hora_formateada }} hrs</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Profesional:</span>
+        <span class="info-value">{{ profesional }}</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Motivo:</span>
+        <span class="info-value">{{ motivo_cancelacion }}</span>
+    </div>
+</div>
+
+<div class="highlight-box" style="border-left: 4px solid {{ color_tema }};">
+    <h3 style="color: {{ color_tema }};">PRÓXIMOS PASOS:</h3>
+    <ul>
+        <li>Puede agendar una nueva cita a través de nuestro portal web</li>
+        <li>O contactarnos directamente para reagendar</li>
+        <li>Si tiene dudas, comuníquese con nuestro centro</li>
+    </ul>
+</div>
+{% endblock %}

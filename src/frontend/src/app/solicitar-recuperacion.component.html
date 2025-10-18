@@ -1,0 +1,38 @@
+<app-navbar></app-navbar>
+<div class="container-fluid fondo-login min-vh-100 d-flex align-items-center justify-content-center py-4">
+  <div class="row w-100 justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
+      <div class="card card-login sombra">
+        <div class="card-body p-4 p-sm-5">
+          <h3 class="text-center mb-4 fs-2 fs-sm-1">Recuperar Contraseña</h3>
+          <form (ngSubmit)="solicitar()" #recForm="ngForm">
+            <div class="mb-3">
+              <label for="email" class="form-label fw-bold">Correo electrónico</label>
+              <input 
+                id="email" 
+                type="email" 
+                class="form-control campo"
+                [(ngModel)]="email" 
+                name="email" 
+                placeholder="ejemplo@correo.com"
+                required />
+            </div>
+            <div *ngIf="mensaje" class="alert mb-4" [class.alert-success]="mensaje.includes('[SUCCESS]')" [class.alert-danger]="mensaje.includes('[ERROR]')" [class.alert-warning]="mensaje.includes('[WARNING]')">
+              {{ mensaje.replace('[SUCCESS] ', '').replace('[ERROR] ', '').replace('[WARNING] ', '') }}
+            </div>
+            <div class="d-grid mb-3">
+              <button 
+                type="submit" 
+                class="btn btn-primary btn-lg"
+                [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <i *ngIf="!loading" class="bi bi-envelope-fill me-2"></i>
+                {{ loading ? 'Solicitando...' : 'Solicitar recuperación' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

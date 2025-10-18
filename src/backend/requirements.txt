@@ -1,0 +1,10 @@
+fastapi[standard]
+uvicorn
+sqlalchemy
+pymysql
+bcrypt
+PyJWT
+email-validator
+fastapi-mail
+python-dotenv
+jinja2

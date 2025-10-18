@@ -1,0 +1,137 @@
+<app-navbar></app-navbar>
+<div class="fondo-perfil container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+      <div class="card card-perfil sombra">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4">Mi Perfil</h2>
+          <div *ngIf="message" class="alert mb-4" 
+               [class.alert-success]="message.includes('[SUCCESS]')" 
+               [class.alert-danger]="message.includes('[ERROR]')">
+            {{ message.replace('[SUCCESS] ', '').replace('[ERROR] ', '') }}
+          </div>
+          <div *ngIf="isLoading" class="text-center mb-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <form *ngIf="!isLoading" (ngSubmit)="saveProfile()">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">RUT</label>
+                  <input type="text" class="form-control campo" 
+                         [value]="profile.rut" readonly>
+                  <div class="form-text">El RUT no se puede modificar</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Nombre *</label>
+                  <input type="text" 
+                         class="form-control campo"
+                         [class.is-invalid]="errors.nombre"
+                         [(ngModel)]="profile.nombre"
+                         name="nombre"
+                         placeholder="Tu nombre"
+                         [readonly]="!isEditing"
+                         (input)="onInputChange('nombre')"
+                         required>
+                  <div *ngIf="errors.nombre" class="invalid-feedback">
+                    {{ errors.nombre }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Apellido Paterno *</label>
+                  <input type="text" 
+                         class="form-control campo"
+                         [class.is-invalid]="errors.apellido_paterno"
+                         [(ngModel)]="profile.apellido_paterno"
+                         name="apellido_paterno"
+                         placeholder="Tu apellido paterno"
+                         [readonly]="!isEditing"
+                         (input)="onInputChange('apellido_paterno')"
+                         required>
+                  <div *ngIf="errors.apellido_paterno" class="invalid-feedback">
+                    {{ errors.apellido_paterno }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Apellido Materno</label>
+                  <input type="text" 
+                         class="form-control campo"
+                         [class.is-invalid]="errors.apellido_materno"
+                         [(ngModel)]="profile.apellido_materno"
+                         name="apellido_materno"
+                         placeholder="Tu apellido materno (opcional)"
+                         [readonly]="!isEditing"
+                         (input)="onInputChange('apellido_materno')">
+                  <div *ngIf="errors.apellido_materno" class="invalid-feedback">
+                    {{ errors.apellido_materno }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Correo Electrónico *</label>
+                  <input type="email" 
+                         class="form-control campo"
+                         [class.is-invalid]="errors.email"
+                         [(ngModel)]="profile.email"
+                         name="email"
+                         placeholder="tu@email.com"
+                         [readonly]="!isEditing"
+                         (input)="onInputChange('email')"
+                         required>
+                  <div *ngIf="errors.email" class="invalid-feedback">
+                    {{ errors.email }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Teléfono</label>
+                  <input type="tel" 
+                         class="form-control campo"
+                         [class.is-invalid]="errors.telefono"
+                         [(ngModel)]="profile.telefono"
+                         name="telefono"
+                         placeholder="+56 9 1234 5678 (opcional)"
+                         [readonly]="!isEditing"
+                         (input)="onInputChange('telefono')">
+                  <div *ngIf="errors.telefono" class="invalid-feedback">
+                    {{ errors.telefono }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+              <button *ngIf="!isEditing" 
+                      type="button" 
+                      class="btn btn-primary"
+                      (click)="toggleEdit()">
+                <i class="bi bi-pencil-square me-2"></i>
+                Editar Perfil
+              </button>
+              <div *ngIf="isEditing" class="d-flex gap-2">
+                <button type="submit" 
+                        class="btn btn-success"
+                        [disabled]="isLoading">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!isLoading" class="bi bi-check-lg me-2"></i>
+                  {{ isLoading ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button type="button" 
+                        class="btn btn-secondary"
+                        (click)="toggleEdit()"
+                        [disabled]="isLoading">
+                  <i class="bi bi-x-lg me-2"></i>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+            <div class="text-center mt-3">
+              <small class="text-muted">* Campos obligatorios</small>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

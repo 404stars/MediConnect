@@ -1,0 +1,74 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-azul fixed-top sombra">
+  <div class="container-fluid">
+        <a class="navbar-brand" routerLink="/">MediConnect</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mx-auto d-flex align-items-center">
+                <li class="nav-item nav-custom" *ngIf="!isLoggedIn">
+          <a routerLink="/login" class="nav-link d-flex flex-column align-items-center">
+            <img src="assets/Logos/login.png" alt="Iniciar Sesión" class="icono-nav">
+            <span class="nav-text">Iniciar Sesión</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn">
+          <a routerLink="/perfil" class="nav-link d-flex flex-column align-items-center">
+            <img src="assets/Logos/perfil.png" alt="Mi Perfil" class="icono-nav">
+            <span class="nav-text">Mi Perfil</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn && hasRole('Paciente')">
+          <a routerLink="/pedir-hora" class="nav-link d-flex flex-column align-items-center">
+            <img src="assets/Logos/pedirhora.png" alt="Pedir Hora" class="icono-nav">
+            <span class="nav-text">Pedir Hora</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn && hasRole('Paciente')">
+          <a routerLink="/mis-horas" class="nav-link d-flex flex-column align-items-center">
+            <img src="assets/Logos/mishoras.png" alt="Mis Horas" class="icono-nav">
+            <span class="nav-text">Mis Horas</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn && hasRole('Administrador')">
+          <a routerLink="/gestion-citas" class="nav-link d-flex flex-column align-items-center">
+            <i class="bi bi-calendar-event icono-nav-bootstrap"></i>
+            <span class="nav-text">Gestión Citas</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn && (hasRole('Médico') || hasRole('Recepcionista') || hasRole('Administrador'))">
+          <a routerLink="/agenda-medica" class="nav-link d-flex flex-column align-items-center">
+            <img src="assets/Logos/agenda.png" alt="Agenda Médica" class="icono-nav">
+            <span class="nav-text">Agenda Médica</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn && (hasRole('Recepcionista') || hasRole('Administrador'))">
+          <a routerLink="/gestion-horarios" class="nav-link d-flex flex-column align-items-center">
+            <i class="bi bi-calendar-check icono-nav-bootstrap"></i>
+            <span class="nav-text">Gestión Horarios</span>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn && hasRole('Administrador')">
+          <a routerLink="/administracion" class="nav-link d-flex flex-column align-items-center">
+            <img src="assets/Logos/admin.png" alt="Administración" class="icono-nav">
+            <span class="nav-text">Administración</span>
+          </a>
+        </li>
+        <li class="nav-item nav-custom" *ngIf="isLoggedIn && activeRole && userRoles.length > 1">
+          <a (click)="cambiarRol()" class="nav-link d-flex flex-column align-items-center" style="cursor: pointer;" title="Cambiar rol">
+            <i class="bi bi-person-badge icono-nav-bootstrap"></i>
+            <span class="nav-text">{{ activeRole }}</span>
+            <small class="text-white-50" style="font-size: 0.7rem;">Cambiar</small>
+          </a>
+        </li>
+                <li class="nav-item nav-custom" *ngIf="isLoggedIn">
+          <a (click)="logout()" class="nav-link d-flex flex-column align-items-center" style="cursor: pointer;">
+            <i class="bi bi-box-arrow-right icono-nav-bootstrap"></i>
+            <span class="nav-text">Cerrar Sesión</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

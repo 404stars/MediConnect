@@ -1,0 +1,181 @@
+.fondo-agenda {
+  background-color: #ECF2E9;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.custom-table {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.custom-table thead th {
+  background-color: #1E3859;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.custom-table tbody tr:nth-child(odd) {
+  background-color: #F5F9F9;
+}
+
+.custom-table tbody tr:nth-child(even) {
+  background-color: #E8F0F0;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #A7D9D9;
+  transition: background-color 0.3s ease;
+}
+
+.custom-table tbody td {
+  text-align: left !important;
+}
+
+.custom-table thead th {
+  text-align: left !important;
+}
+
+.custom-table th:last-child,
+.custom-table td:last-child {
+  text-align: center !important;
+}
+
+.campo {
+  background-color: #A7D9D9;
+  border: none;
+  border-radius: 8px;
+}
+
+.btn-azul {
+  border-radius: 8px;
+  padding: 10px 20px;
+  background-color: #1E3859;
+  color: white;
+}
+
+
+.d-flex.flex-column.gap-1 {
+  width: 100%;
+}
+
+.d-flex.flex-column.gap-1 .btn {
+  width: 100%;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.d-flex.flex-column.gap-1 .btn i {
+  margin-right: 4px;
+}
+
+
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+}
+
+.modal-dialog {
+  transform: translateY(-50px);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0);
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  background-color: #1E3859;
+  color: white;
+  border-radius: 10px 10px 0 0;
+}
+
+.modal-header .btn-close {
+  filter: invert(1);
+}
+
+.fecha-btn {
+  transition: all 0.3s ease;
+  border-width: 2px;
+  font-weight: 500;
+}
+
+.fecha-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.fecha-btn.btn-primary {
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+.horario-card-reprogramar {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #e9ecef;
+  height: 100%;
+}
+
+.horario-card-reprogramar:hover {
+  border-color: #ffc107;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.horario-card-reprogramar.selected {
+  border-color: #28a745;
+  background-color: #f0f8f4;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.horario-card-reprogramar .card-body {
+  position: relative;
+}
+
+.modal-dialog.modal-lg {
+  max-width: 900px;
+}
+
+.modal-header.bg-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.horario-card-reprogramar.selected i.bi-check-circle-fill {
+  animation: checkBounce 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .fecha-btn {
+    padding: 12px 8px !important;
+  }
+}

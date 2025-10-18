@@ -1,0 +1,40 @@
+.fondo-admin {
+  background-color: #ECF2E9;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.custom-table {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.custom-table thead th {
+  background-color: #1E3859;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.custom-table tbody tr:nth-child(odd) {
+  background-color: #F5F9F9;
+}
+
+.custom-table tbody tr:nth-child(even) {
+  background-color: #E8F0F0;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #A7D9D9;
+  transition: background-color 0.3s ease;
+}
+
+.btn-azul {
+  border-radius: 8px;
+  padding: 10px 20px;
+  background-color: #1E3859;
+  color: white;
+}

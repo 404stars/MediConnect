@@ -1,0 +1,581 @@
+<app-navbar></app-navbar>
+<div class="fondo-gestion-citas">
+  <div class="container">
+    <div class="card sombra p-4 w-100">
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2 class="mb-0">
+            <i class="bi bi-calendar-event me-2"></i>
+            Gestión de Citas - Vista Administrativa
+          </h2>
+          <button class="btn btn-info" (click)="verEstadisticas()" [disabled]="isLoading">
+            <i class="bi bi-graph-up me-1"></i>
+            {{ mostrarEstadisticas ? 'Ocultar' : 'Ver' }} Estadísticas
+          </button>
+        </div>
+        <div class="mt-3">
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="text-muted me-2"><i class="bi bi-filter"></i> <strong>Filtros rápidos:</strong></span>
+            <button 
+              class="btn btn-sm"
+              [class.btn-outline-secondary]="filtroEstado !== ''"
+              [class.btn-secondary]="filtroEstado === ''"
+              (click)="aplicarFiltroRapido('')"
+              title="Mostrar todas las citas">
+              <i class="bi bi-list-ul"></i> Todas
+            </button>
+            <button 
+              class="btn btn-sm"
+              [class.btn-outline-primary]="filtroEstado !== 'AGENDADA'"
+              [class.btn-primary]="filtroEstado === 'AGENDADA'"
+              (click)="aplicarFiltroRapido('AGENDADA')"
+              title="Solo citas agendadas">
+              <i class="bi bi-calendar-plus"></i> Agendadas
+            </button>
+            <button 
+              class="btn btn-sm"
+              [class.btn-outline-success]="filtroEstado !== 'ATENDIDA'"
+              [class.btn-success]="filtroEstado === 'ATENDIDA'"
+              (click)="aplicarFiltroRapido('ATENDIDA')"
+              title="Solo pacientes atendidos">
+              <i class="bi bi-check-circle-fill"></i> Atendidas
+            </button>
+            <button 
+              class="btn btn-sm"
+              [class.btn-outline-danger]="filtroEstado !== 'CANCELADA'"
+              [class.btn-danger]="filtroEstado === 'CANCELADA'"
+              (click)="aplicarFiltroRapido('CANCELADA')"
+              title="Solo citas canceladas">
+              <i class="bi bi-x-circle-fill"></i> Canceladas
+            </button>
+            <button 
+              class="btn btn-sm"
+              [class.btn-outline-warning]="filtroEstado !== 'NO_ASISTIO'"
+              [class.btn-warning]="filtroEstado === 'NO_ASISTIO'"
+              (click)="aplicarFiltroRapido('NO_ASISTIO')"
+              title="Pacientes que no asistieron">
+              <i class="bi bi-exclamation-triangle-fill"></i> No Asistieron
+            </button>
+            <div class="ms-auto">
+              <small class="text-muted me-2" *ngIf="filtroEstado || filtroFechaDesde || filtroFechaHasta || filtroProfesional || filtroEspecialidad || filtroRutPaciente">
+                <i class="bi bi-info-circle"></i> Filtros activos
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card border-info mb-4 shadow" *ngIf="mostrarEstadisticas && estadisticas">
+        <div class="card-header bg-info text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="bi bi-graph-up-arrow me-2"></i>
+              Estadísticas de Utilización
+            </h5>
+            <button class="btn btn-sm btn-light" (click)="cargarEstadisticas()" [disabled]="isLoading">
+              <i class="bi bi-arrow-clockwise"></i> Actualizar
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="alert alert-light border">
+                <i class="bi bi-calendar-range text-primary fs-5 me-2"></i>
+                <strong>Período:</strong> {{ estadisticas.periodo.fecha_desde }} a {{ estadisticas.periodo.fecha_hasta }}
+                <span *ngIf="estadisticas.periodo.especialidad !== 'Todas'">
+                  | <i class="bi bi-heart-pulse text-danger me-1"></i>{{ estadisticas.periodo.especialidad }}
+                </span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-primary shadow-sm h-100">
+                <div class="card-body">
+                  <h6 class="card-title text-primary">
+                    <i class="bi bi-grid-3x3-gap-fill me-2"></i>Bloques Horarios
+                  </h6>
+                  <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                      <i class="bi bi-check-square text-success me-2"></i>
+                      Total disponibles: <strong class="fs-5">{{ estadisticas.bloques.total_disponibles }}</strong>
+                    </li>
+                    <li class="mb-2">
+                      <i class="bi bi-dash-square text-muted me-2"></i>
+                      Sin usar: <span class="text-muted">{{ estadisticas.bloques.sin_usar }}</span>
+                    </li>
+                    <li>
+                      <i class="bi bi-check-square-fill text-info me-2"></i>
+                      Con cita: <strong>{{ estadisticas.bloques.con_cita }}</strong>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-success shadow-sm h-100">
+                <div class="card-body">
+                  <h6 class="card-title text-success">
+                    <i class="bi bi-calendar-check-fill me-2"></i>Distribución de Citas
+                  </h6>
+                  <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                      <i class="bi bi-calendar3 text-dark me-2"></i>
+                      Total: <strong class="fs-5">{{ estadisticas.citas.total }}</strong>
+                    </li>
+                    <li class="mb-1">
+                      <i class="bi bi-check-circle-fill text-success me-2"></i>
+                      Atendidas: <strong class="text-success">{{ estadisticas.citas.atendidas }}</strong>
+                    </li>
+                    <li class="mb-1">
+                      <i class="bi bi-calendar-plus text-primary me-2"></i>
+                      Agendadas: {{ estadisticas.citas.agendadas }}
+                    </li>
+                    <li class="mb-1">
+                      <i class="bi bi-check-circle text-info me-2"></i>
+                      Confirmadas: {{ estadisticas.citas.confirmadas }}
+                    </li>
+                    <li class="mb-1">
+                      <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                      Canceladas: {{ estadisticas.citas.canceladas }}
+                    </li>
+                    <li>
+                      <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                      No asistió: {{ estadisticas.citas.no_asistio }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-warning shadow-sm h-100">
+                <div class="card-body">
+                  <h6 class="card-title text-warning">
+                    <i class="bi bi-graph-up-arrow me-2"></i>Métricas de Rendimiento
+                  </h6>
+                  <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                          <i class="bi bi-speedometer2 text-success me-2"></i>Utilización:
+                        </span>
+                        <strong class="text-success fs-5">{{ estadisticas.metricas.tasa_utilizacion }}%</strong>
+                      </div>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" [style.width.%]="estadisticas.metricas.tasa_utilizacion"></div>
+                      </div>
+                    </li>
+                    <li class="mb-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                          <i class="bi bi-bookmark-check text-info me-2"></i>Agendadas:
+                        </span>
+                        <strong class="text-info fs-5">{{ estadisticas.metricas.tasa_reserva }}%</strong>
+                      </div>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" [style.width.%]="estadisticas.metricas.tasa_reserva"></div>
+                      </div>
+                    </li>
+                    <li class="mb-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                          <i class="bi bi-exclamation-triangle text-warning me-2"></i>Ausentismo:
+                        </span>
+                        <strong class="text-warning fs-5">{{ estadisticas.metricas.tasa_ausentismo }}%</strong>
+                      </div>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" [style.width.%]="estadisticas.metricas.tasa_ausentismo"></div>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                          <i class="bi bi-x-octagon text-danger me-2"></i>Cancelación:
+                        </span>
+                        <strong class="text-danger fs-5">{{ estadisticas.metricas.tasa_cancelacion }}%</strong>
+                      </div>
+                      <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" [style.width.%]="estadisticas.metricas.tasa_cancelacion"></div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mb-3 g-2" *ngIf="citasFiltradas.length > 0">
+        <div class="col-md-3">
+          <div class="card text-center border-primary stat-card">
+            <div class="card-body py-2 px-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <i class="bi bi-calendar3 text-primary fs-4"></i>
+                <div class="text-end">
+                  <h5 class="mb-0 fw-bold text-primary">{{ citasFiltradas.length }}</h5>
+                  <small class="text-muted">Total</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-success stat-card">
+            <div class="card-body py-2 px-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                <div class="text-end">
+                  <h5 class="mb-0 fw-bold text-success">{{ contarPorEstado('ATENDIDA') }}</h5>
+                  <small class="text-muted">Atendidas</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-warning stat-card">
+            <div class="card-body py-2 px-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <i class="bi bi-clock-fill text-warning fs-4"></i>
+                <div class="text-end">
+                  <h5 class="mb-0 fw-bold text-warning">{{ contarPorEstado('AGENDADA') + contarPorEstado('CONFIRMADA') }}</h5>
+                  <small class="text-muted">Pendientes</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-danger stat-card">
+            <div class="card-body py-2 px-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                <div class="text-end">
+                  <h5 class="mb-0 fw-bold text-danger">{{ contarPorEstado('CANCELADA') }}</h5>
+                  <small class="text-muted">Canceladas</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-funnel-fill me-2"></i>
+            Filtros de Búsqueda y Exportación
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label fw-bold">
+                <i class="bi bi-tag-fill text-primary me-1"></i>Estado:
+              </label>
+              <select class="form-select form-select-sm" [(ngModel)]="filtroEstado" (change)="onFiltroChange()">
+                <option value="">
+                  <i class="bi bi-list-ul"></i> Todos los estados
+                </option>
+                <option value="AGENDADA">Agendadas</option>
+                <option value="CONFIRMADA">Confirmadas</option>
+                <option value="EN_ATENCION">En Atención</option>
+                <option value="ATENDIDA">Atendidas</option>
+                <option value="CANCELADA">Canceladas</option>
+                <option value="NO_ASISTIO">No Asistió</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">
+                <i class="bi bi-calendar-date text-success me-1"></i>Desde:
+              </label>
+              <input type="date" class="form-control form-control-sm" 
+                     [(ngModel)]="filtroFechaDesde" (change)="onFiltroChange()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">
+                <i class="bi bi-calendar-check text-success me-1"></i>Hasta:
+              </label>
+              <input type="date" class="form-control form-control-sm" 
+                     [(ngModel)]="filtroFechaHasta" (change)="onFiltroChange()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">
+                <i class="bi bi-person-badge text-info me-1"></i>RUT Paciente:
+              </label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="filtroRutPaciente" (input)="onFiltroChange()"
+                       placeholder="12345678-9">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">
+                <i class="bi bi-person-fill-gear text-primary me-1"></i>Profesional:
+              </label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="filtroProfesional" (input)="onFiltroLocalChange()"
+                       placeholder="Nombre del profesional">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">
+                <i class="bi bi-heart-pulse text-danger me-1"></i>Especialidad:
+              </label>
+              <select class="form-select form-select-sm" [(ngModel)]="filtroEspecialidad" (change)="onFiltroChange()">
+                <option value="">Todas las especialidades</option>
+                <option *ngFor="let especialidad of especialidades" [value]="especialidad.nombre">
+                  {{ especialidad.nombre }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+              <button class="btn btn-outline-secondary btn-sm flex-fill" (click)="limpiarFiltros()" title="Limpiar todos los filtros">
+                <i class="bi bi-x-circle"></i> Limpiar
+              </button>
+              <button class="btn btn-primary btn-sm flex-fill" (click)="cargarTodasLasCitas()" title="Aplicar filtros">
+                <i class="bi bi-arrow-clockwise"></i> Aplicar
+              </button>
+            </div>
+          </div>
+          <div class="row mt-3 pt-3 border-top">
+            <div class="col-12">
+              <div class="d-flex flex-column gap-2">
+                <h6 class="mb-2">
+                  <i class="bi bi-download me-2"></i>
+                  Exportar a Excel (.csv)
+                </h6>
+                <div class="alert alert-info py-2 mb-2">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <small>
+                    <strong>Nota:</strong> Los reportes exportados respetarán todos los filtros activos (estado, fechas, profesional, especialidad, RUT del paciente).
+                  </small>
+                </div>
+                <div class="btn-group" role="group">
+                  <button class="btn btn-outline-success" (click)="exportarCSV()" [disabled]="isLoading">
+                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!isLoading" class="bi bi-file-earmark-spreadsheet me-1"></i>
+                    Exportar Todas las Citas (con filtros activos)
+                  </button>
+                  <button class="btn btn-outline-primary" (click)="exportarPacientesAtendidos()" [disabled]="isLoading">
+                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!isLoading" class="bi bi-check-circle-fill me-1"></i>
+                    Exportar Solo Pacientes Atendidos (con filtros activos)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">
+          <strong>{{ citasFiltradas.length }}</strong> citas encontradas
+        </span>
+        <span class="text-muted" *ngIf="getTotalPages() > 1">
+          Página {{ currentPage }} de {{ getTotalPages() }}
+        </span>
+      </div>
+      <div *ngIf="message" class="alert text-center mb-4" [class.alert-success]="message.includes('[SUCCESS]')" [class.alert-danger]="message.includes('[ERROR]')" [class.alert-warning]="message.includes('[WARNING]')" [class.alert-info]="!message.includes('[SUCCESS]') && !message.includes('[ERROR]') && !message.includes('[WARNING]')">
+        <i class="bi" [class.bi-check-circle]="message.includes('[SUCCESS]')" [class.bi-exclamation-triangle]="message.includes('[ERROR]') || message.includes('[WARNING]')" [class.bi-info-circle]="!message.includes('[SUCCESS]') && !message.includes('[ERROR]') && !message.includes('[WARNING]')" class="me-2"></i>
+        {{ message.replace('[SUCCESS] ', '').replace('[ERROR] ', '').replace('[WARNING] ', '') }}
+      </div>
+      <div *ngIf="isLoading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando citas...</p>
+      </div>
+      <div *ngIf="!isLoading && citasFiltradas.length > 0" class="table-responsive">
+        <table class="table table-hover table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>Fecha/Hora</th>
+              <th>Paciente</th>
+              <th>Profesional</th>
+              <th>Especialidad</th>
+              <th>Estado</th>
+              <th>Observaciones</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cita of citasFiltradas">
+              <td>
+                <div>
+                  <div>
+                    <i class="bi bi-calendar-event text-primary me-1"></i>
+                    <strong>{{ formatearFecha(cita.fecha) }}</strong>
+                  </div>
+                  <small class="text-muted">
+                    <i class="bi bi-clock"></i> {{ formatearHora(cita.hora) }}
+                  </small>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <div class="mb-1">
+                    <i class="bi bi-person-circle text-info fs-5 me-1"></i>
+                    <strong>{{ cita.paciente.nombres }} {{ cita.paciente.apellidos }}</strong>
+                  </div>
+                  <div>
+                    <small class="text-muted">
+                      <i class="bi bi-card-text me-1"></i>{{ cita.paciente.rut }}
+                    </small>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-envelope-fill text-muted me-1" style="font-size: 0.875rem;"></i>
+                    <small class="text-muted">{{ cita.paciente.email }}</small>
+                  </div>
+                  <div *ngIf="cita.paciente.telefono">
+                    <small class="text-muted">
+                      <i class="bi bi-telephone-fill me-1"></i>{{ cita.paciente.telefono }}
+                    </small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <i class="bi bi-person-badge text-success me-1"></i>
+                  <strong>{{ cita.profesional.nombres }} {{ cita.profesional.apellidos }}</strong>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info text-white px-2 py-1">
+                  <i class="bi bi-heart-pulse-fill me-1"></i>
+                  {{ cita.profesional.especialidad.nombre }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="cita.estado === 'AGENDADA'" class="badge bg-primary px-2 py-1">
+                  <i class="bi bi-calendar-plus me-1"></i>Agendada
+                </span>
+                <span *ngIf="cita.estado === 'CONFIRMADA'" class="badge bg-info px-2 py-1">
+                  <i class="bi bi-check-circle me-1"></i>Confirmada
+                </span>
+                <span *ngIf="cita.estado === 'EN_ATENCION'" class="badge bg-warning text-dark px-2 py-1">
+                  <i class="bi bi-person-fill-gear me-1"></i>En Atención
+                </span>
+                <span *ngIf="cita.estado === 'ATENDIDA'" class="badge bg-success px-2 py-1">
+                  <i class="bi bi-check-circle-fill me-1"></i>Atendida
+                </span>
+                <span *ngIf="cita.estado === 'CANCELADA'" class="badge bg-danger px-2 py-1">
+                  <i class="bi bi-x-circle-fill me-1"></i>Cancelada
+                </span>
+                <span *ngIf="cita.estado === 'NO_ASISTIO'" class="badge bg-secondary px-2 py-1">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>No Asistió
+                </span>
+              </td>
+              <td>
+                <div *ngIf="cita.motivo_cancelacion">
+                  <small class="text-danger">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    {{ cita.motivo_cancelacion.descripcion }}
+                  </small>
+                </div>
+                <div *ngIf="!cita.motivo_cancelacion && cita.observaciones && cita.estado === 'CANCELADA'">
+                  <small class="text-warning fw-semibold">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>
+                    {{ cita.observaciones }}
+                  </small>
+                </div>
+                <div *ngIf="!cita.motivo_cancelacion && cita.observaciones && cita.estado !== 'CANCELADA'">
+                  <small class="text-muted">
+                    <i class="bi bi-chat-left-text me-1"></i>
+                    {{ cita.observaciones }}
+                  </small>
+                </div>
+                <span *ngIf="!cita.observaciones && !cita.motivo_cancelacion" class="text-muted">
+                  Sin observaciones
+                </span>
+              </td>
+              <td>
+                <div class="d-grid gap-2" style="min-width: 140px;">
+                  <button 
+                    *ngIf="cita.estado === 'AGENDADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'EN_ATENCION'"
+                    class="btn btn-success btn-sm"
+                    (click)="abrirModalConfirmacion(cita.id_cita, 'atendida')"
+                    [disabled]="isLoading"
+                    title="Marcar como atendida">
+                    <i class="bi bi-check-circle-fill me-1"></i>Atendida
+                  </button>
+                  <button 
+                    *ngIf="cita.estado === 'AGENDADA' || cita.estado === 'CONFIRMADA'"
+                    class="btn btn-warning btn-sm text-dark"
+                    (click)="abrirModalConfirmacion(cita.id_cita, 'no-asistio')"
+                    [disabled]="isLoading"
+                    title="Marcar como NO asistió">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>No asistió
+                  </button>
+                  <div *ngIf="cita.estado === 'ATENDIDA'" class="alert alert-success mb-0 py-1 px-2 small text-center">
+                    <i class="bi bi-check-circle-fill"></i> <strong> Procesada</strong>
+                  </div>
+                  <div *ngIf="cita.estado === 'NO_ASISTIO'" class="alert alert-secondary mb-0 py-1 px-2 small text-center">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <strong> Ausente</strong>
+                  </div>
+                  <div *ngIf="cita.estado === 'CANCELADA'" class="alert alert-danger mb-0 py-1 px-2 small text-center">
+                    <i class="bi bi-x-circle-fill"></i> <strong> Cancelada</strong>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <nav *ngIf="!isLoading && getTotalPages() > 1" class="mt-4">
+        <ul class="pagination pagination-sm justify-content-center">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="cambiarPagina(currentPage - 1)" [style.cursor]="currentPage === 1 ? 'not-allowed' : 'pointer'">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+          <li class="page-item" 
+              *ngFor="let page of [].constructor(getTotalPages()); let i = index"
+              [class.active]="currentPage === i + 1">
+            <a class="page-link" (click)="cambiarPagina(i + 1)" style="cursor: pointer;">
+              {{ i + 1 }}
+            </a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+            <a class="page-link" (click)="cambiarPagina(currentPage + 1)" 
+               [style.cursor]="currentPage === getTotalPages() ? 'not-allowed' : 'pointer'">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div *ngIf="!isLoading && citasFiltradas.length === 0 && !message" class="text-center py-5">
+        <i class="bi bi-calendar-x display-1 text-muted"></i>
+        <h4 class="mt-3 text-muted">No hay citas disponibles</h4>
+        <p class="text-muted">Ajuste los filtros o verifique que existan citas en el sistema.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación -->
+  <div *ngIf="mostrarModalConfirmacion" class="modal-overlay" (click)="cerrarModalConfirmacion()">
+    <div class="modal-confirmacion" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-circle text-warning me-2"></i>
+          Confirmar Acción
+        </h5>
+        <button type="button" class="btn-close" (click)="cerrarModalConfirmacion()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">{{ getMensajeModal() }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalConfirmacion()">
+          <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+        <button type="button" 
+                class="btn"
+                [ngClass]="accionModal === 'atendida' ? 'btn-success' : 'btn-warning'"
+                (click)="confirmarAccion()">
+          <i class="bi bi-check-circle me-1"></i>Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

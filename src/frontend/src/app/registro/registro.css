@@ -1,0 +1,97 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #ECF2E9;
+  overflow: hidden;
+}
+
+.bg-azul {
+  background-color: #1E3859;
+}
+
+.btn-azul {
+  background-color: #1E3859;
+  color: white;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-azul:hover {
+  background-color: #162a42;
+  color: #fff;
+}
+
+.fondo-login {
+  background-color: #ECF2E9;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card-login {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 12px 12px 0px #A7D9D9;
+  padding: 20px;
+}
+
+.campo {
+  background-color: #A7D9D9;
+  border: none;
+  border-radius: 8px;
+}
+
+
+.icono {
+  font-size: 28px;
+  color: white;
+}
+
+.icono-img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 5px;
+}
+
+
+.password-toggle-btn {
+  border-left: none !important;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.password-toggle-btn:focus {
+  box-shadow: none;
+  border-color: #80bdff;
+}
+
+.input-group .form-control:focus + .password-toggle-btn {
+  border-color: #80bdff;
+}
+
+
+.input-group .form-control {
+  border-right: none;
+}
+
+.input-group .btn {
+  border-radius: 0 6px 6px 0;
+}
+
+
+.form-text {
+  font-size: 0.875em;
+  margin-top: 0.25rem;
+}
+   

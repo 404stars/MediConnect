@@ -1,0 +1,179 @@
+<div class="d-flex justify-content-center align-items-center fondo-login">
+  <div class="card card-login sombra w-100">
+    <div class="card-body">
+      <h3 class="text-center mb-4">Registro</h3>
+      <form (ngSubmit)="onSubmit()" #registroForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="nombre" class="form-label fw-bold">Nombre *</label>
+            <input 
+              type="text" 
+              class="form-control campo"
+              [class.is-invalid]="errors.nombre"
+              id="nombre" 
+              [(ngModel)]="nombre" 
+              name="nombre" 
+              placeholder="Tu nombre"
+              (input)="onInputChange('nombre')"
+              required>
+            <div *ngIf="errors.nombre" class="invalid-feedback">
+              {{ errors.nombre }}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="apellidoPaterno" class="form-label fw-bold">Apellido Paterno *</label>
+            <input 
+              type="text" 
+              class="form-control campo"
+              [class.is-invalid]="errors.apellidoPaterno"
+              id="apellidoPaterno" 
+              [(ngModel)]="apellidoPaterno" 
+              name="apellidoPaterno" 
+              placeholder="Apellido paterno"
+              (input)="onInputChange('apellidoPaterno')"
+              required>
+            <div *ngIf="errors.apellidoPaterno" class="invalid-feedback">
+              {{ errors.apellidoPaterno }}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="apellidoMaterno" class="form-label fw-bold">Apellido Materno</label>
+            <input 
+              type="text" 
+              class="form-control campo"
+              [class.is-invalid]="errors.apellidoMaterno"
+              id="apellidoMaterno" 
+              [(ngModel)]="apellidoMaterno" 
+              name="apellidoMaterno"
+              placeholder="Apellido materno"
+              (input)="onInputChange('apellidoMaterno')">
+            <div *ngIf="errors.apellidoMaterno" class="invalid-feedback">
+              {{ errors.apellidoMaterno }}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="telefono" class="form-label fw-bold">Teléfono</label>
+            <input 
+              type="tel" 
+              class="form-control campo"
+              [class.is-invalid]="errors.telefono"
+              id="telefono" 
+              [(ngModel)]="telefono" 
+              name="telefono"
+              placeholder="+56912345678"
+              (input)="onInputChange('telefono')">
+            <div *ngIf="errors.telefono" class="invalid-feedback">
+              {{ errors.telefono }}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label fw-bold">Correo Electrónico *</label>
+            <input 
+              type="email" 
+              class="form-control campo"
+              [class.is-invalid]="errors.email"
+              id="email" 
+              [(ngModel)]="email" 
+              name="email" 
+              placeholder="ejemplo@correo.com"
+              (input)="onInputChange('email')"
+              required>
+            <div *ngIf="errors.email" class="invalid-feedback">
+              {{ errors.email }}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="rut" class="form-label fw-bold">RUT *</label>
+            <input 
+              type="text" 
+              class="form-control campo"
+              [class.is-invalid]="errors.rut"
+              id="rut" 
+              [(ngModel)]="rut" 
+              name="rut" 
+              placeholder="12345678-9 o 12.345.678-9"
+              (input)="formatRut(); onInputChange('rut')"
+              maxlength="12"
+              required>
+            <div class="form-text text-muted small">
+            </div>
+            <div *ngIf="errors.rut" class="invalid-feedback">
+              {{ errors.rut }}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="password" class="form-label fw-bold">Contraseña *</label>
+            <div class="input-group">
+              <input 
+                [type]="getPasswordInputType('password')"
+                class="form-control campo"
+                [class.is-invalid]="errors.password"
+                id="password" 
+                [(ngModel)]="password" 
+                name="password" 
+                placeholder="Mín. 6 caracteres, letras y números"
+                (input)="onInputChange('password')"
+                required>
+              <button 
+                class="btn btn-outline-secondary password-toggle-btn" 
+                type="button" 
+                (click)="togglePasswordVisibility('password')"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <i [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+            <div *ngIf="errors.password" class="invalid-feedback d-block">
+              {{ errors.password }}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="confirmPassword" class="form-label fw-bold">Confirmar Contraseña *</label>
+            <div class="input-group">
+              <input 
+                [type]="getPasswordInputType('confirmPassword')"
+                class="form-control campo"
+                [class.is-invalid]="errors.confirmPassword"
+                id="confirmPassword" 
+                [(ngModel)]="confirmPassword" 
+                name="confirmPassword" 
+                placeholder="Repite tu contraseña"
+                (input)="onInputChange('confirmPassword')"
+                required>
+              <button 
+                class="btn btn-outline-secondary password-toggle-btn" 
+                type="button" 
+                (click)="togglePasswordVisibility('confirmPassword')"
+                [attr.aria-label]="showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <i [class]="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+            <div *ngIf="errors.confirmPassword" class="invalid-feedback d-block">
+              {{ errors.confirmPassword }}
+            </div>
+          </div>
+        </div>
+        <div *ngIf="message" class="alert mb-3" [class.alert-success]="message.includes('[SUCCESS]')" [class.alert-danger]="message.includes('[ERROR]')" [class.alert-warning]="message.includes('[WARNING]')">
+          {{ message.replace('[SUCCESS] ', '').replace('[ERROR] ', '').replace('[WARNING] ', '') }}
+        </div>
+        <div class="d-grid">
+          <button 
+            type="submit" 
+            class="btn btn-azul"
+            [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isLoading ? 'Registrando...' : 'Registrarse' }}
+          </button>
+        </div>
+        <div class="text-center mt-3">
+          <p>¿Ya tienes cuenta? <a routerLink="/login" class="text-decoration-none">Inicia sesión aquí</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

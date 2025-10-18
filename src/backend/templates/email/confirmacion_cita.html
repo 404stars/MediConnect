@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p>Estimado/a <strong>{{ nombre }}</strong>,</p>
+
+<p>Su cita médica ha sido <span class="success-text" style="color: {{ color_tema }};">confirmada exitosamente</span>.</p>
+
+<div class="info-box" style="border-left: 4px solid {{ color_tema }};">
+    <h3 style="color: {{ color_tema }};">DETALLES DE SU CITA:</h3>
+    <div class="info-item">
+        <span class="info-label">Fecha:</span>
+        <span class="info-value">{{ fecha_formateada }}</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Hora:</span>
+        <span class="info-value">{{ hora_formateada }} hrs</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Profesional:</span>
+        <span class="info-value">{{ profesional }}</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Especialidad:</span>
+        <span class="info-value">{{ especialidad }}</span>
+    </div>
+</div>
+
+<div class="highlight-box" style="border-left: 4px solid {{ color_tema }};">
+    <h3 style="color: {{ color_tema }};">RECOMENDACIONES IMPORTANTES:</h3>
+    <ul>
+        <li>Llegue 15 minutos antes de su hora asignada</li>
+        <li>Traiga su cédula de identidad</li>
+        <li>Si necesita cancelar, hágalo con al menos 24 horas de anticipación</li>
+        <li>Puede consultar sus citas en el portal web</li>
+    </ul>
+</div>
+
+<p>¡Esperamos verle pronto!</p>
+{% endblock %}

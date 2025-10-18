@@ -1,0 +1,221 @@
+<app-navbar></app-navbar>
+<div class="fondo-admin container">
+  <div class="card sombra p-4 w-100">
+    <h2 class="text-center mb-4">Administración de Usuarios</h2>
+    <div *ngIf="message" class="alert" [class.alert-success]="message.includes('[SUCCESS]')" [class.alert-danger]="message.includes('[ERROR]')" [class.alert-warning]="message.includes('[WARNING]')" [class.alert-info]="!message.includes('[SUCCESS]') && !message.includes('[ERROR]') && !message.includes('[WARNING]')">
+      {{ message.replace('[SUCCESS] ', '').replace('[ERROR] ', '').replace('[WARNING] ', '') }}
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-primary" (click)="openCreateUserModal()">
+        <i class="bi bi-person-plus"></i> Crear Usuario
+      </button>
+    </div>
+    <div class="table-responsive" *ngIf="!isLoading">
+      <table class="table custom-table text-center">
+        <thead>
+          <tr>
+            <th>RUT</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Roles</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let usuario of usuarios">
+            <td>{{ usuario.rut }}</td>
+            <td>{{ usuario.nombre }} {{ usuario.apellido_paterno }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.telefono || '-' }}</td>
+            <td>
+              <ng-container *ngIf="usuario.roles.length > 0">
+                <span class="badge bg-primary me-1" 
+                      *ngFor="let role of usuario.roles">{{ role.nombre }}</span>
+              </ng-container>
+              <span *ngIf="usuario.roles.length === 0" class="text-muted">Sin roles</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-secondary me-1" 
+                      (click)="openRoleModal(usuario)" title="Gestionar Roles">
+                <i class="bi bi-person-gear"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" 
+                      (click)="deleteUser(usuario)" title="Eliminar Usuario">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="isLoading" class="text-center py-4">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+    <div *ngIf="showRoleModal" class="modal" style="display: block;">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Gestionar Roles - {{ selectedUser?.nombre }}</h5>
+            <button type="button" class="btn-close" (click)="closeRoleModal()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Roles disponibles:</label>
+              <div class="form-check" *ngFor="let role of roles">
+                <input class="form-check-input" type="checkbox" 
+                       [id]="'role-' + role.id_rol"
+                       [checked]="selectedRoles.includes(role.id_rol)"
+                       (change)="toggleRole(role.id_rol)">
+                <label class="form-check-label" [for]="'role-' + role.id_rol">
+                  {{ role.nombre }}
+                  <small class="text-muted d-block">{{ role.descripcion }}</small>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeRoleModal()">Cancelar</button>
+            <button type="button" class="btn btn-primary" (click)="updateRoles()">Actualizar Roles</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showCreateUserModal" class="modal" style="display: block;">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Crear Nuevo Usuario</h5>
+            <button type="button" class="btn-close" (click)="closeCreateUserModal()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <h6><i class="bi bi-info-circle"></i> Ejemplo de datos válidos:</h6>
+              <small>
+                <strong>Nombre:</strong> Forrest (sin "Dr." ni puntos)<br>
+                <strong>Apellidos:</strong> Solo letras y espacios<br>
+                <strong>RUT:</strong> 12345678-9 (con guión)<br>
+                <strong>Email:</strong> doctor@hospital.cl<br>
+                <strong>Teléfono:</strong> +56912345678 (solo números y +)
+              </small>
+            </div>
+            <form>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="rut" class="form-label">RUT *</label>
+                  <input type="text" class="form-control" id="rut" 
+                         [(ngModel)]="newUser.rut" name="rut"
+                         (input)="formatRut(); onInputChange('rut')"
+                         [class.is-invalid]="newUserErrors.rut"
+                         placeholder="12345678-9">
+                  <div class="form-text">Incluir guión y dígito verificador</div>
+                  <div class="invalid-feedback" *ngIf="newUserErrors.rut">
+                    {{ newUserErrors.rut }}
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label">Email *</label>
+                  <input type="email" class="form-control" id="email" 
+                         [(ngModel)]="newUser.email" name="email"
+                         (input)="onInputChange('email')"
+                         [class.is-invalid]="newUserErrors.email"
+                         placeholder="usuario@ejemplo.com">
+                  <div class="invalid-feedback" *ngIf="newUserErrors.email">
+                    {{ newUserErrors.email }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="nombre" class="form-label">Nombre *</label>
+                  <input type="text" class="form-control" id="nombre" 
+                         [(ngModel)]="newUser.nombre" name="nombre"
+                         (input)="onInputChange('nombre')"
+                         [class.is-invalid]="newUserErrors.nombre"
+                         placeholder="Juan">
+                  <div class="form-text">Solo letras y espacios</div>
+                  <div class="invalid-feedback" *ngIf="newUserErrors.nombre">
+                    {{ newUserErrors.nombre }}
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="apellidoPaterno" class="form-label">Apellido Paterno *</label>
+                  <input type="text" class="form-control" id="apellidoPaterno" 
+                         [(ngModel)]="newUser.apellido_paterno" name="apellidoPaterno"
+                         (input)="onInputChange('apellidoPaterno')"
+                         [class.is-invalid]="newUserErrors.apellidoPaterno"
+                         placeholder="Pérez">
+                  <div class="form-text">Solo letras y espacios</div>
+                  <div class="invalid-feedback" *ngIf="newUserErrors.apellidoPaterno">
+                    {{ newUserErrors.apellidoPaterno }}
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="apellidoMaterno" class="form-label">Apellido Materno</label>
+                  <input type="text" class="form-control" id="apellidoMaterno" 
+                         [(ngModel)]="newUser.apellido_materno" name="apellidoMaterno"
+                         placeholder="González">
+                  <div class="form-text">Solo letras y espacios</div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="telefono" class="form-label">Teléfono *</label>
+                  <input type="text" class="form-control" id="telefono" 
+                         [(ngModel)]="newUser.telefono" name="telefono"
+                         (input)="onTelefonoChange($event); onInputChange('telefono')"
+                         [class.is-invalid]="newUserErrors.telefono"
+                         placeholder="+56912345678">
+                  <div class="form-text">Formato: +56912345678 (obligatorio)</div>
+                  <div class="invalid-feedback" *ngIf="newUserErrors.telefono">
+                    {{ newUserErrors.telefono }}
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="password" class="form-label">Contraseña *</label>
+                  <div class="input-group">
+                    <input [type]="getPasswordInputType()" class="form-control" id="password" 
+                           [(ngModel)]="newUser.password" name="password"
+                           (input)="onInputChange('password')"
+                           [class.is-invalid]="newUserErrors.password"
+                           placeholder="Mínimo 6 caracteres">
+                    <button class="btn btn-outline-secondary" type="button" 
+                            (click)="togglePasswordVisibility()">
+                      <i [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                    </button>
+                  </div>
+                  <div class="invalid-feedback" *ngIf="newUserErrors.password">
+                    {{ newUserErrors.password }}
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Roles:</label>
+                <div class="form-check" *ngFor="let role of roles">
+                  <input class="form-check-input" type="checkbox" 
+                         [id]="'new-role-' + role.id_rol"
+                         [checked]="newUser.roles.includes(role.id_rol)"
+                         (change)="toggleUserRole(role.id_rol)">
+                  <label class="form-check-label" [for]="'new-role-' + role.id_rol">
+                    {{ role.nombre }}
+                    <small class="text-muted d-block">{{ role.descripcion }}</small>
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeCreateUserModal()">Cancelar</button>
+            <button type="button" class="btn btn-primary" 
+                    (click)="createUser()" [disabled]="isLoading">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              Crear Usuario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+@import "@fontsource/montserrat/400.css";
+@import "@fontsource/montserrat/700.css";   
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+  background-color: #ECF2E9;
+}
+
+.fw-bold {
+  font-weight: 700; 
+}
+
+
+body {
+  padding-top: 130px;
+}
+
+
+@media (max-width: 991.98px) {
+  body {
+    padding-top: 80px;
+  }
+}
+
+
+@media (max-width: 575.98px) {
+  body {
+    padding-top: 70px;
+  }
+}

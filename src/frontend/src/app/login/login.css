@@ -1,0 +1,337 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #ECF2E9;
+}
+
+.bg-azul {
+  background-color: #1E3859;
+}
+
+.btn-azul {
+  background-color: #1E3859;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(30, 56, 89, 0.3);
+}
+
+.btn-azul:hover {
+  background-color: #162a42;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(30, 56, 89, 0.4);
+}
+
+.btn-azul:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(30, 56, 89, 0.2);
+}
+
+.fondo-login {
+  background-color: #ECF2E9;
+  min-height: 100vh;
+  padding-top: 20px;
+  padding-bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-login {
+  border-radius: 16px; 
+  border: none;
+  background: white;
+  overflow: hidden;
+}
+
+.sombra {
+  box-shadow: 0 10px 30px rgba(167, 217, 217, 0.4),
+              0 4px 15px rgba(167, 217, 217, 0.3);
+}
+
+.campo {
+  background-color: #A7D9D9;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.campo:focus {
+  background-color: #95c7c7;
+  border: none;
+  box-shadow: 0 0 0 0.2rem rgba(167, 217, 217, 0.5);
+}
+
+.password-toggle-btn {
+  background-color: #A7D9D9 !important;
+  border: none !important;
+  color: #1E3859 !important;
+  transition: all 0.3s ease;
+  border-radius: 0 8px 8px 0;
+  padding: 0.5rem 1rem;
+  outline: none !important;
+}
+
+.password-toggle-btn:hover {
+  background-color: #95c7c7 !important;
+  color: #0f1f33 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.password-toggle-btn:focus {
+  box-shadow: none !important;
+  background-color: #95c7c7 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.password-toggle-btn:active {
+  background-color: #7fb5b5 !important;
+  color: #0f1f33 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.password-toggle-btn i {
+  font-size: 1.2rem;
+}
+
+.input-group > .form-control {
+  border-radius: 8px 0 0 8px;
+}
+
+.input-group > .form-control:focus {
+  z-index: 3;
+}
+
+@media (max-width: 575.98px) {
+  .fondo-login {
+    padding-top: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .card-login {
+    border-radius: 12px;
+  }
+  
+  .card-body {
+    padding: 1.5rem !important;
+  }
+  
+  h3 {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .fondo-login {
+    padding-top: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .fondo-login {
+    padding-top: 20px;
+  }
+}
+
+@media (min-width: 992px) {
+  .fondo-login {
+    padding-top: 20px;
+  }
+  
+  .card-login {
+    max-width: 500px;
+  }
+}
+
+.navbar {
+  border-radius: 12px;
+  margin: 0px auto;
+  height: 130px;     
+  padding: 30px 60px;   
+  max-width: 1400px; 
+  width: 95%; 
+  display: flex;
+  justify-content: center;
+}
+
+.navbar-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 80px;
+  width: 100%;
+}
+
+.nav-item span {
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.icono-img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 8px;
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+
+.nav-custom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;  
+  gap: 10px;
+}
+
+.nav-custom:hover span {
+  color: #E63946;
+}
+
+.nav-custom:hover img {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(96%) saturate(3781%) hue-rotate(341deg) brightness(94%) contrast(92%);
+  transform: translateY(-3px);
+}
+
+.navbar.fixed-top {
+  top: 30px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+}
+
+.navbar {
+  border-radius: 12px;
+  margin: 0px auto;
+  height: 160px;         
+  padding: 40px 80px;    
+  max-width: 1600px;     
+  width: 95%; 
+  display: flex;
+  justify-content: center;
+  background-color: #1E3859; 
+}
+
+.navbar-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 100px;   
+  width: 100%;
+}
+
+.nav-custom {
+  display: flex;
+  flex-direction: col; 
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;  
+  gap: 16px;   
+}
+
+.icono-img {
+  width: 70px;   
+  height: 70px;
+  margin: 0;     
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+
+.nav-item span {
+  color: white;
+  font-weight: bold;
+  font-size: 22px;  
+}
+
+.password-toggle-btn {
+  border-left: none !important;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.password-toggle-btn:focus {
+  box-shadow: none;
+  border-color: #80bdff;
+}
+
+.input-group .form-control:focus + .password-toggle-btn {
+  border-color: #80bdff;
+}
+
+.input-group .form-control {
+  border-right: none;
+}
+
+.input-group .btn {
+  border-radius: 0 6px 6px 0;
+}
+
+
+.modal-backdrop-role {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-dialog-role {
+  max-width: 600px;
+  width: 90%;
+  animation: slideDown 0.4s ease;
+}
+
+.role-selector-btn {
+  transition: all 0.3s ease;
+  border: 2px solid #1E3859;
+  border-radius: 12px;
+}
+
+.role-selector-btn:hover {
+  background-color: #1E3859;
+  color: white;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(30, 56, 89, 0.3);
+}
+
+.role-selector-btn:active {
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

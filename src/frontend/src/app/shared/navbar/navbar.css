@@ -1,0 +1,246 @@
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1030;
+  border-radius: 0 0 12px 12px;
+  margin: 0;
+  padding: 10px 20px;
+  height: 110px;
+  max-width: 1400px;
+  width: 95%;
+  background-color: #1E3859;
+  box-shadow: 0 4px 15px rgba(74, 111, 165, 0.8);
+  overflow: visible;
+}
+
+
+.navbar-brand {
+  color: white !important;
+  font-weight: 700;
+  font-size: 1.5rem;
+  text-decoration: none;
+}
+
+
+.navbar-toggler {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 4px 8px;
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.nav-custom .nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  min-width: 85px;
+  background-color: transparent;
+  height: 90px;
+}
+
+
+.icono-nav {
+  width: 45px;
+  height: 45px;
+  transition: filter 0.3s ease, transform 0.2s ease;
+  margin-bottom: 4px;
+}
+
+
+.icono-nav-bootstrap {
+  font-size: 45px;
+  width: 45px;
+  height: 45px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, transform 0.2s ease;
+  margin-bottom: 4px;
+}
+
+
+.nav-text {
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  text-align: center;
+  white-space: nowrap;
+  margin: 0;
+  line-height: 1.2;
+}
+
+
+.nav-custom:hover .nav-link {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.nav-custom:hover .nav-text {
+  color: #E63946;
+}
+
+.nav-custom:hover .icono-nav {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(96%) saturate(3781%) hue-rotate(341deg) brightness(94%) contrast(92%);
+  transform: translateY(-2px);
+}
+
+.nav-custom:hover .icono-nav-bootstrap {
+  color: #E63946 !important;
+  transform: translateY(-2px);
+}
+
+
+.nav-custom .nav-link.active {
+  background-color: rgba(230, 57, 70, 0.2);
+}
+
+.nav-custom .nav-link.active .nav-text {
+  color: #E63946;
+}
+
+.nav-custom .nav-link.active .icono-nav {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(96%) saturate(3781%) hue-rotate(341deg) brightness(94%) contrast(92%);
+}
+
+.nav-custom .nav-link.active .icono-nav-bootstrap {
+  color: #E63946 !important;
+}
+
+
+
+
+@media (max-width: 991.98px) {
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    padding: 8px 15px;
+    height: auto;
+    min-height: 60px;
+  }
+
+  .navbar-brand {
+    font-size: 1.3rem;
+  }
+  
+  .navbar-collapse {
+    background-color: #1E3859;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 15px;
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+  
+  .nav-item {
+    width: 100%;
+  }
+  
+  .nav-custom .nav-link {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px 15px;
+    border-radius: 6px;
+    width: 100%;
+    margin-bottom: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: auto;
+    min-width: auto;
+  }
+  
+  .icono-nav, .icono-nav-bootstrap {
+    width: 35px;
+    height: 35px;
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+  
+  .icono-nav-bootstrap {
+    font-size: 35px;
+  }
+  
+  .nav-text {
+    font-size: 14px;
+    margin-left: 8px;
+  }
+}
+
+
+@media (max-width: 575.98px) {
+  .navbar {
+    padding: 6px 10px;
+    min-height: 55px;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .navbar-collapse {
+    padding: 10px;
+    margin-top: 8px;
+  }
+  
+  .nav-custom .nav-link {
+    padding: 10px 12px;
+    margin-bottom: 3px;
+  }
+  
+  .icono-nav, .icono-nav-bootstrap {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+  
+  .icono-nav-bootstrap {
+    font-size: 30px;
+  }
+  
+  .nav-text {
+    font-size: 13px;
+  }
+}
+
