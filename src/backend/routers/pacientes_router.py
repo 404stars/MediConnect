@@ -1,50 +1,38 @@
 import logging
+from datetime import date, datetime, timedelta
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, func
-from typing import List, Optional
-from datetime import date, datetime, time, timedelta
 
 from database.connection import get_db
-from models.usuario import Usuario
-from models.paciente import Paciente
-from models.cita import Cita
-from models.bloque_hora import BloqueHora
-from models.agenda_diaria import AgendaDiaria
-from models.profesional_salud import ProfesionalSalud
-from models.funcionario import Funcionario
-from models.especialidad import Especialidad
-from models.motivo_cancelacion import MotivoCancelacion
-from models.profesional_especialidad import ProfesionalEspecialidad
-from schemas.auth_schemas import CitaResponseAdmin
-from schemas.pacientes_schemas import (
-    EspecialidadResponse,
-    MotivoCancelacionResponse,
-    ProfesionalResponse,
-    BloqueDisponibleResponse,
-    CitaResponse,
-    SolicitarCitaRequest,
-    CancelarCitaRequest,
-    ReprogramarCitaRequest
+from models import (
+    Usuario, Paciente, Cita, BloqueHora, AgendaDiaria,
+    ProfesionalSalud, Funcionario, Especialidad,
+    MotivoCancelacion, ProfesionalEspecialidad
 )
-from utils.permissions import require_admin, require_staff, require_any_role, get_user_roles, has_any_role
-from utils.auth_dependencies import get_current_user
-from utils.email_utils import enviar_correo_confirmacion, enviar_correo_cancelacion, enviar_correo_reprogramacion
-from utils.constants import EstadoCita, Rol, MotivoCancelacionExcluido, ReglasNegocio, Mensajes
-from services.query_service import get_profesional_info, get_usuario_nombre_completo
+from schemas import (
+    EspecialidadResponse, MotivoCancelacionResponse, ProfesionalResponse,
+    BloqueDisponibleResponse, CitaResponse, SolicitarCitaRequest,
+    CancelarCitaRequest, ReprogramarCitaRequest, CitaResponseAdmin
+)
+from utils import (
+    require_staff, require_any_role, get_user_roles,
+    get_current_user, EstadoCita, Rol,
+    MotivoCancelacionExcluido, Mensajes,
+    enviar_correo_cancelacion,
+    enviar_correo_reprogramacion
+)
+from services import CitaService
 from services.cita_service import (
     obtener_info_bloque_agenda,
     obtener_nombre_profesional,
     obtener_especialidad_profesional,
-    validar_tiempo_anticipacion,
     validar_fecha_pasada,
     enviar_correo_seguro,
     obtener_profesional_desde_usuario,
     obtener_paciente_actual,
-    normalizar_rut,
     buscar_pacientes_por_rut,
     validar_cita_duplicada,
-    validar_cita_conflicto_horario,
     construir_cita_response_admin
 )
 
@@ -303,127 +291,16 @@ async def solicitar_cita(
     current_user: Usuario = Depends(get_current_user),
     _: int = Depends(require_any_role([Rol.PACIENTE]))
 ):
-    try:
-        paciente = obtener_paciente_actual(db, current_user.id_usuario)
-        
-        bloque = db.query(BloqueHora).join(AgendaDiaria).filter(
-            BloqueHora.id_bloque == request.id_bloque,
-            AgendaDiaria.activa == True
-        ).with_for_update().first()
-        
-        if not bloque:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Bloque de hora no encontrado o agenda inactiva"
-            )
-        
-        if not bloque.disponible:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Este bloque de hora ya no está disponible"
-            )
-        
-        cita_existente = db.query(Cita).filter(
-            Cita.id_bloque == request.id_bloque,
-            Cita.estado.in_(EstadoCita.ACTIVAS)
-        ).first()
-        
-        if cita_existente:
-            bloque.disponible = False
-            db.commit()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Este bloque de hora ya está ocupado por otra cita"
-            )
-        
-        agenda = db.query(AgendaDiaria).filter(
-            AgendaDiaria.id_agenda == bloque.id_agenda
-        ).first()
-        
-        if validar_cita_duplicada(db, paciente.id_paciente, agenda.id_profesional, agenda.fecha, bloque.hora_inicio):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya tienes una cita agendada con este profesional en la misma fecha y hora"
-            )
-        
-        citas_mismo_dia = db.query(Cita).join(
-            BloqueHora, Cita.id_bloque == BloqueHora.id_bloque
-        ).join(
-            AgendaDiaria, BloqueHora.id_agenda == AgendaDiaria.id_agenda
-        ).filter(
-            Cita.id_paciente == paciente.id_paciente,
-            Cita.estado.in_(EstadoCita.CANCELABLES),
-            AgendaDiaria.fecha == agenda.fecha
-        ).count()
-        
-        if citas_mismo_dia >= 3:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No puedes tener más de 3 citas agendadas en un mismo día"
-            )
-        
-        nueva_cita = Cita(
-            id_paciente=paciente.id_paciente,
-            id_bloque=request.id_bloque,
-            fecha_solicitud=datetime.utcnow(),
-            estado=EstadoCita.AGENDADA,
-            motivo_consulta=request.motivo_consulta
-        )
-        
-        db.add(nueva_cita)
-        bloque.disponible = False
-        
-        try:
-            db.commit()
-            db.refresh(nueva_cita)
-        except Exception as e:
-            db.rollback()
-            if "Duplicate entry" in str(e) or "IntegrityError" in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Este bloque de hora ya fue tomado por otro usuario. Por favor selecciona otro horario."
-                )
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Error al procesar la solicitud: {str(e)}"
-                )
-        
-        agenda = db.query(AgendaDiaria).filter(AgendaDiaria.id_agenda == bloque.id_agenda).first()
-        fecha_cita = agenda.fecha if agenda else date.today()
-        
-        nombre_profesional = obtener_nombre_profesional(db, agenda.id_profesional)
-        especialidad_nombre = obtener_especialidad_profesional(db, agenda.id_profesional)
-        
-        usuario_paciente = db.query(Usuario).filter(Usuario.id_usuario == paciente.id_usuario).first()
-        if usuario_paciente and usuario_paciente.email:
-            await enviar_correo_seguro(
-                enviar_correo_confirmacion,
-                email=usuario_paciente.email,
-                nombre=f"{usuario_paciente.nombre} {usuario_paciente.apellido_paterno}",
-                fecha=fecha_cita,
-                hora=bloque.hora_inicio,
-                profesional=nombre_profesional,
-                especialidad=especialidad_nombre
-            )
-        
-        return {
-            "message": "Cita agendada exitosamente",
-            "id_cita": nueva_cita.id_cita,
-            "fecha": fecha_cita,
-            "hora": bloque.hora_inicio,
-            "profesional": nombre_profesional,
-            "especialidad": especialidad_nombre
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al agendar la cita: {str(e)}"
-        )
+    paciente = obtener_paciente_actual(db, current_user.id_usuario)
+    cita_service = CitaService(db)
+    
+    return await cita_service.crear_cita_completa(
+        id_paciente=paciente.id_paciente,
+        id_bloque=request.id_bloque,
+        motivo_consulta=request.motivo_consulta,
+        email_paciente=current_user.email,
+        nombre_paciente=f"{current_user.nombre} {current_user.apellido_paterno}"
+    )
 
 @router.get("/mis-citas", response_model=List[CitaResponse])
 async def obtener_mis_citas(

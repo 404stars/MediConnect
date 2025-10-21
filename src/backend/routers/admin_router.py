@@ -1,34 +1,28 @@
 import logging
+from datetime import datetime, date
+import io
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc, func, case
+
 from database.connection import get_db
-from models.usuario import Usuario
-from models.sesion import Sesion
-from models.usuario_rol import UsuarioRol
-from models.rol import Rol
-from models.funcionario import Funcionario
-from models.cargo import Cargo
-from models.profesional_salud import ProfesionalSalud
-from models.paciente import Paciente
-from models.especialidad import Especialidad
-from models.cita import Cita
-from models.bloque_hora import BloqueHora
-from models.agenda_diaria import AgendaDiaria
-from models.profesional_especialidad import ProfesionalEspecialidad
-from schemas.admin_schemas import (
-    AdminCreateUserSchema, UpdateUserRolesSchema, UserListItemSchema, UserRoleSchema,
-    RoleSchema, UsersListResponseSchema, RolesListResponseSchema
+from models import (
+    Usuario, Sesion, UsuarioRol, Rol, Funcionario, Cargo,
+    ProfesionalSalud, Paciente, Especialidad, Cita, BloqueHora,
+    AgendaDiaria, ProfesionalEspecialidad
 )
-from schemas.auth_schemas import MessageResponseSchema
-from utils.hashing import hash_password
+from schemas import (
+    AdminCreateUserSchema, UpdateUserRolesSchema, UserListItemSchema,
+    UserRoleSchema, RoleSchema, UsersListResponseSchema,
+    RolesListResponseSchema, MessageResponseSchema
+)
+from utils import hash_password, require_permission, require_admin, EstadoCita, Rol as RolConstantes
 from utils.auth_dependencies import get_current_user_id
-from utils.permissions import require_permission, require_admin
-from utils.constants import Rol as RolConstantes, EstadoCita
-from services.report_service import generar_csv_citas, generar_csv_pacientes_atendidos
-from datetime import datetime, date
-import io
+from services import (
+    generar_csv_citas, generar_csv_pacientes_atendidos,
+    UsuarioService, ReportQueryBuilder
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -40,88 +34,27 @@ def create_user(
     db: Session = Depends(get_db)
 ):
     try:
-        existing_user = db.query(Usuario).filter(
-            (Usuario.rut == user_data.rut) | (Usuario.email == user_data.email)
-        ).first()
+        usuario_service = UsuarioService(db)
         
-        if existing_user:
-            if existing_user.rut == user_data.rut:
-                raise HTTPException(status_code=400, detail="Ya existe un usuario con este RUT")
-            else:
-                raise HTTPException(status_code=400, detail="Ya existe un usuario con este email")
-
-        hashed_password = hash_password(user_data.password)
-        new_user = Usuario(
+        nuevo_usuario = usuario_service.crear_usuario_completo(
             rut=user_data.rut,
             nombre=user_data.nombre,
             apellido_paterno=user_data.apellido_paterno,
-            apellido_materno=user_data.apellido_materno or "",
+            apellido_materno=user_data.apellido_materno,
             email=user_data.email,
             telefono=user_data.telefono,
-            hash_password=hashed_password
+            password=user_data.password,
+            roles_ids=user_data.roles
         )
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        
-        if user_data.roles:
-            for role_id in user_data.roles:
-                role = db.query(Rol).filter(Rol.id_rol == role_id).first()
-                if role:
-                    user_role = UsuarioRol(id_usuario=new_user.id_usuario, id_rol=role_id)
-                    db.add(user_role)
-                    
-                    if role.nombre in [RolConstantes.MEDICO, RolConstantes.RECEPCIONISTA]:
-                        cargo_nombre = "Médico General" if role.nombre == RolConstantes.MEDICO else "Recepcionista"
-                        cargo = db.query(Cargo).filter(Cargo.nombre == cargo_nombre).first()
-                        
-                        if cargo:
-                            funcionario = Funcionario(
-                                id_usuario=new_user.id_usuario,
-                                id_cargo=cargo.id_cargo,
-                                fecha_contrato=date.today(),
-                                estado='ACTIVO'
-                            )
-                            db.add(funcionario)
-                            db.flush()
-                            
-                            if role.nombre == RolConstantes.MEDICO:
-                                profesional = ProfesionalSalud(
-                                    id_funcionario=funcionario.id_funcionario,
-                                    registro_profesional=f"REG-{new_user.id_usuario}-{date.today().year}",
-                                    fecha_titulo=date.today(),
-                                    estado_registro='VIGENTE'
-                                )
-                                db.add(profesional)
-                    
-                    elif role.nombre == RolConstantes.PACIENTE:
-                        paciente = Paciente(
-                            id_usuario=new_user.id_usuario
-                        )
-                        db.add(paciente)
-            
-            db.commit()
-        else:
-            paciente_role = db.query(Rol).filter(Rol.nombre == RolConstantes.PACIENTE).first()
-            if paciente_role:
-                user_role = UsuarioRol(id_usuario=new_user.id_usuario, id_rol=paciente_role.id_rol)
-                db.add(user_role)
-                
-                paciente = Paciente(
-                    id_usuario=new_user.id_usuario
-                )
-                db.add(paciente)
-                db.commit()
         
         return MessageResponseSchema(
             message="Usuario creado exitosamente",
-            user_id=new_user.id_usuario
+            user_id=nuevo_usuario.id_usuario
         )
         
-    except HTTPException:
-        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        db.rollback()
         logger.error(f"Error creating user: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
@@ -196,26 +129,14 @@ def update_user_roles(
     db: Session = Depends(get_db)
 ):
     try:
-        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        
-        db.query(UsuarioRol).filter(UsuarioRol.id_usuario == user_id).delete()
-        
-        for role_id in roles_data.roles:
-            role = db.query(Rol).filter(Rol.id_rol == role_id).first()
-            if role:
-                user_role = UsuarioRol(id_usuario=user_id, id_rol=role_id)
-                db.add(user_role)
-        
-        db.commit()
+        usuario_service = UsuarioService(db)
+        usuario_service.actualizar_roles_usuario(user_id, roles_data.roles)
         
         return MessageResponseSchema(message="Roles actualizados exitosamente")
         
-    except HTTPException:
-        raise
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        db.rollback()
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.delete("/users/{user_id}", response_model=MessageResponseSchema)
@@ -225,24 +146,16 @@ def delete_user(
     db: Session = Depends(get_db)
 ):
     try:
-        if user_id == current_user_id:
-            raise HTTPException(status_code=400, detail="No puedes eliminar tu propia cuenta")
-        
-        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        
-        db.query(UsuarioRol).filter(UsuarioRol.id_usuario == user_id).delete()
         db.query(Sesion).filter(Sesion.id_usuario == user_id).delete()
-        db.delete(user)
-        db.commit()
+        
+        usuario_service = UsuarioService(db)
+        usuario_service.eliminar_usuario(user_id, current_user_id)
         
         return MessageResponseSchema(message="Usuario eliminado exitosamente")
         
-    except HTTPException:
-        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        db.rollback()
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.get("/reportes/citas-csv")
@@ -257,67 +170,16 @@ async def exportar_reporte_citas_csv(
     current_user_id: int = Depends(require_admin)
 ):
     try:
-        query = db.query(Cita).join(
-            BloqueHora, Cita.id_bloque == BloqueHora.id_bloque
-        ).join(
-            AgendaDiaria, BloqueHora.id_agenda == AgendaDiaria.id_agenda
-        ).join(
-            Paciente, Cita.id_paciente == Paciente.id_paciente
-        ).join(
-            Usuario, Paciente.id_usuario == Usuario.id_usuario
-        )
-        
-        if estado:
-            query = query.filter(Cita.estado == estado)
-        
-        if fecha_desde:
-            try:
-                fecha_desde_obj = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
-                query = query.filter(AgendaDiaria.fecha >= fecha_desde_obj)
-            except ValueError:
-                pass
-        
-        if fecha_hasta:
-            try:
-                fecha_hasta_obj = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
-                query = query.filter(AgendaDiaria.fecha <= fecha_hasta_obj)
-            except ValueError:
-                pass
-        
-        if rut_paciente:
-            query = query.filter(Usuario.rut.contains(rut_paciente.replace('-', '')))
-        
-        if profesional:
-            from sqlalchemy.orm import aliased
-            UsuarioProfesional = aliased(Usuario)
-            
-            query = query.join(
-                ProfesionalSalud, AgendaDiaria.id_profesional == ProfesionalSalud.id_profesional
-            ).join(
-                Funcionario, ProfesionalSalud.id_funcionario == Funcionario.id_funcionario
-            ).join(
-                UsuarioProfesional, Funcionario.id_usuario == UsuarioProfesional.id_usuario
-            ).filter(
-                (UsuarioProfesional.nombre.ilike(f'%{profesional}%')) |
-                (UsuarioProfesional.apellido_paterno.ilike(f'%{profesional}%')) |
-                (UsuarioProfesional.apellido_materno.ilike(f'%{profesional}%'))
-            )
-        
-        if especialidad:
-            if not profesional:
-                query = query.join(
-                    ProfesionalSalud, AgendaDiaria.id_profesional == ProfesionalSalud.id_profesional
-                )
-            
-            query = query.join(
-                ProfesionalEspecialidad, ProfesionalSalud.id_profesional == ProfesionalEspecialidad.id_profesional
-            ).join(
-                Especialidad, ProfesionalEspecialidad.id_especialidad == Especialidad.id_especialidad
-            ).filter(
-                Especialidad.nombre.ilike(f'%{especialidad}%')
-            )
-        
-        citas = query.order_by(desc(Cita.fecha_solicitud)).all()
+        builder = ReportQueryBuilder(db)
+        citas = (builder
+                 .with_estado(estado)
+                 .with_fecha_desde(fecha_desde)
+                 .with_fecha_hasta(fecha_hasta)
+                 .with_rut_paciente(rut_paciente)
+                 .with_profesional(profesional)
+                 .with_especialidad(especialidad)
+                 .order_by_fecha_desc()
+                 .build())
         
         logger.info(f"Total de citas encontradas: {len(citas)}")
         
@@ -471,63 +333,15 @@ async def exportar_pacientes_atendidos_csv(
     current_user_id: int = Depends(require_admin)
 ):
     try:
-        query = db.query(Cita).join(
-            BloqueHora, Cita.id_bloque == BloqueHora.id_bloque
-        ).join(
-            AgendaDiaria, BloqueHora.id_agenda == AgendaDiaria.id_agenda
-        ).join(
-            Paciente, Cita.id_paciente == Paciente.id_paciente
-        ).join(
-            Usuario, Paciente.id_usuario == Usuario.id_usuario
-        ).filter(
-            Cita.estado == EstadoCita.ATENDIDA
-        )
-
-        if fecha_desde:
-            try:
-                fecha_desde_obj = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
-                query = query.filter(AgendaDiaria.fecha >= fecha_desde_obj)
-            except ValueError:
-                pass
-        
-        if fecha_hasta:
-            try:
-                fecha_hasta_obj = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
-                query = query.filter(AgendaDiaria.fecha <= fecha_hasta_obj)
-            except ValueError:
-                pass
-
-        if profesional:
-            from sqlalchemy.orm import aliased
-            UsuarioProfesional = aliased(Usuario)
-            
-            query = query.join(
-                ProfesionalSalud, AgendaDiaria.id_profesional == ProfesionalSalud.id_profesional
-            ).join(
-                Funcionario, ProfesionalSalud.id_funcionario == Funcionario.id_funcionario
-            ).join(
-                UsuarioProfesional, Funcionario.id_usuario == UsuarioProfesional.id_usuario
-            ).filter(
-                (UsuarioProfesional.nombre.ilike(f'%{profesional}%')) |
-                (UsuarioProfesional.apellido_paterno.ilike(f'%{profesional}%')) |
-                (UsuarioProfesional.apellido_materno.ilike(f'%{profesional}%'))
-            )
-
-        if especialidad:
-            if not profesional:
-                query = query.join(
-                    ProfesionalSalud, AgendaDiaria.id_profesional == ProfesionalSalud.id_profesional
-                )
-            
-            query = query.join(
-                ProfesionalEspecialidad, ProfesionalSalud.id_profesional == ProfesionalEspecialidad.id_profesional
-            ).join(
-                Especialidad, ProfesionalEspecialidad.id_especialidad == Especialidad.id_especialidad
-            ).filter(
-                Especialidad.nombre.ilike(f'%{especialidad}%')
-            )
-        
-        citas = query.order_by(desc(AgendaDiaria.fecha)).all()
+        builder = ReportQueryBuilder(db)
+        citas = (builder
+                 .with_estado(EstadoCita.ATENDIDA)
+                 .with_fecha_desde(fecha_desde)
+                 .with_fecha_hasta(fecha_hasta)
+                 .with_profesional(profesional)
+                 .with_especialidad(especialidad)
+                 .order_by_agenda_fecha_desc()
+                 .build())
         
         csv_content = generar_csv_pacientes_atendidos(citas, db)
         

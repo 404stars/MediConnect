@@ -1,27 +1,24 @@
 import logging
+from datetime import date, time, datetime, timedelta
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
-from typing import List, Optional
-from datetime import date, time, datetime, timedelta
 from pydantic import BaseModel, field_validator
 
 from database.connection import get_db
-from models.usuario import Usuario
-from models.profesional_salud import ProfesionalSalud
-from models.funcionario import Funcionario
-from models.agenda_diaria import AgendaDiaria
-from models.bloque_hora import BloqueHora
-from models.especialidad import Especialidad
-from models.profesional_especialidad import ProfesionalEspecialidad
-from models.usuario_rol import UsuarioRol
-from models.rol import Rol
-from models.cita import Cita
-from utils.auth_dependencies import get_current_user
-from utils.permissions import require_roles, require_any_role, has_any_role
-from utils.constants import Rol as RolConstantes
-from services.query_service import get_usuario_nombre_completo
+from models import (
+    Usuario, ProfesionalSalud, Funcionario, AgendaDiaria,
+    BloqueHora, Especialidad, ProfesionalEspecialidad,
+    UsuarioRol, Rol, Cita
+)
+from utils import (
+    get_current_user, require_roles, require_any_role,
+    has_any_role, Rol as RolConstantes
+)
+from services import get_usuario_nombre_completo, AgendaService
+from validators import HorarioValidator
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/horarios", tags=["Gestión de Horarios"])
@@ -268,132 +265,21 @@ async def crear_agenda_diaria(
     db: Session = Depends(get_db),
     current_user_id: int = Depends(require_roles([RolConstantes.ADMINISTRADOR, RolConstantes.RECEPCIONISTA]))
 ):
+    agenda_service = AgendaService(db)
     
+    bloques_formateados = None
+    if request.bloques:
+        bloques_formateados = [{"inicio": b.inicio, "fin": b.fin} for b in request.bloques]
     
-    fecha_actual = date.today()
-    if request.fecha < fecha_actual:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No se pueden crear agendas para fechas pasadas"
-        )
-    
-    
-    fecha_maxima = fecha_actual + timedelta(days=180)
-    if request.fecha > fecha_maxima:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No se pueden crear agendas con más de 6 meses de anticipación"
-        )
-    
-    
-    hora_minima = time(7, 0)
-    hora_maxima = time(22, 0)
-    
-    if request.hora_inicio < hora_minima or request.hora_inicio > hora_maxima:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La hora de inicio debe estar entre las 07:00 y las 22:00"
-        )
-    
-    if request.hora_fin < hora_minima or request.hora_fin > hora_maxima:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La hora de fin debe estar entre las 07:00 y las 22:00"
-        )
-    
-    
-    hora_inicio_dt = datetime.combine(date.today(), request.hora_inicio)
-    hora_fin_dt = datetime.combine(date.today(), request.hora_fin)
-    duracion_jornada = (hora_fin_dt - hora_inicio_dt).total_seconds() / 60
-    
-    if duracion_jornada < 60:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La jornada debe tener al menos 1 hora de duración"
-        )
-    
-    if duracion_jornada > 720:  
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La jornada no puede exceder las 12 horas"
-        )
-    
-    profesional = db.query(ProfesionalSalud).filter(
-        ProfesionalSalud.id_profesional == request.id_profesional
-    ).first()
-    
-    if not profesional:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Profesional no encontrado"
-        )
-    
-    agenda_existente = db.query(AgendaDiaria).filter(
-        and_(
-            AgendaDiaria.id_profesional == request.id_profesional,
-            AgendaDiaria.fecha == request.fecha
-        )
-    ).first()
-    
-    if agenda_existente:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ya existe una agenda para este profesional en la fecha especificada"
-        )
-    
-    try:
-        nueva_agenda = AgendaDiaria(
-            id_profesional=request.id_profesional,
-            fecha=request.fecha,
-            hora_inicio=request.hora_inicio,
-            hora_fin=request.hora_fin,
-            duracion_cita=request.duracion_cita,
-            activa=True,
-            observaciones=request.observaciones
-        )
-        
-        db.add(nueva_agenda)
-        db.flush()
-        
-        if not request.bloques:
-            bloques_automaticos = generar_bloques_automaticos(
-                request.hora_inicio, 
-                request.hora_fin, 
-                request.duracion_cita
-            )
-            
-            for bloque in bloques_automaticos:
-                nuevo_bloque = BloqueHora(
-                    id_agenda=nueva_agenda.id_agenda,
-                    hora_inicio=bloque["hora_inicio"],
-                    hora_fin=bloque["hora_fin"],
-                    disponible=True
-                )
-                db.add(nuevo_bloque)
-        else:
-            for bloque in request.bloques:
-                nuevo_bloque = BloqueHora(
-                    id_agenda=nueva_agenda.id_agenda,
-                    hora_inicio=bloque.inicio,
-                    hora_fin=bloque.fin,
-                    disponible=True
-                )
-                db.add(nuevo_bloque)
-        
-        db.commit()
-        
-        return {
-            "message": "Agenda creada exitosamente",
-            "id_agenda": nueva_agenda.id_agenda,
-        }
-        
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Error creating agenda: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear la agenda: {str(e)}"
-        )
+    return agenda_service.crear_agenda_completa(
+        id_profesional=request.id_profesional,
+        fecha=request.fecha,
+        hora_inicio=request.hora_inicio,
+        hora_fin=request.hora_fin,
+        duracion_cita=request.duracion_cita,
+        bloques=bloques_formateados,
+        observaciones=request.observaciones
+    )
 
 @router.get("/agendas")
 async def obtener_todas_las_agendas(
